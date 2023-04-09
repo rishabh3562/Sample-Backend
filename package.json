@@ -33,6 +33,7 @@
     "otp-generator": "^4.0.1",
     "path": "^0.12.7",
     "stripe": "^11.16.0",
-    "twilio": "^4.9.0"
+    "twilio": "^4.9.0",
+    "validator": "^13.9.0"
   }
 }
