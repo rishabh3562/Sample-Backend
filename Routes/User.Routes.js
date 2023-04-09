@@ -9,15 +9,26 @@ const saltRounds = +process.env.saltRounds;
 
 const UserRoutes = express.Router();
 
-UserRoutes.post("/register", async (req, res) => {
+UserRoutes.post("/register", checkApiKey, async (req, res) => {
   const payload = req.body;
-  console.log(payload);
 
   try {
-    const email = await UserModel.findOne({ email: payload.email });
-    if (email) {
+    const emailExists = await UserModel.findOne({ email: payload.email });
+    const usernameExists = await UserModel.findOne({ username: payload.username });
+
+    if (emailExists && usernameExists) {
       res.status(200).send({
-        msg: "Email is already Present Please try to again Email",
+        msg: "Email and Username already registered",
+        error: true,
+      });
+    } else if (emailExists) {
+      res.status(200).send({
+        msg: "Email already registered",
+        error: true,
+      });
+    } else if (usernameExists) {
+      res.status(200).send({
+        msg: "Username already registered",
         error: true,
       });
     } else {
@@ -28,7 +39,9 @@ UserRoutes.post("/register", async (req, res) => {
           payload.password = hash;
           const user = new UserModel(payload);
 
-          await user.save();
+          const result = await user.save();
+          console.log(result);
+
           res.status(200).send({
             msg: "Registration Success",
             username: user.name,
@@ -39,14 +52,15 @@ UserRoutes.post("/register", async (req, res) => {
       });
     }
   } catch (error) {
-    res
-      .status(400)
-      .send({ msg: "something went wrong while registering user", error });
+    res.status(400).send({
+      msg: "something went wrong while registering user",
+      error: error.message,
+    });
     console.log(error);
   }
 });
 
-UserRoutes.post("/login", async (req, res) => {
+UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
   try {
@@ -61,7 +75,7 @@ UserRoutes.post("/login", async (req, res) => {
             const tokenData = {
               vendorId: user._id,
               name: user.name,
-              lname: user.lname,
+
               email: user.email,
               // userType: user.userType,
             }
@@ -108,7 +122,7 @@ UserRoutes.get("/", checkApiKey, async (req, res) => {
     });
   }
 });
-UserRoutes.get("/:id", async (req, res) => {
+UserRoutes.get("/:id", checkApiKey, async (req, res) => {
   const Id = req.params.id;
 
   try {
@@ -123,7 +137,7 @@ UserRoutes.get("/:id", async (req, res) => {
   }
 });
 
-UserRoutes.patch("/profile", authenticate, async (req, res) => {
+UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
   const payload = req.body;
   const token = req.headers.authorization;
   const decoded = jwt.verify(token, process.env.key);
@@ -148,7 +162,7 @@ UserRoutes.patch("/profile", authenticate, async (req, res) => {
   }
 });
 
-UserRoutes.delete("/delete", async (req, res) => {
+UserRoutes.delete("/delete", checkApiKey, async (req, res) => {
   const payload = req.body;
   const token = req.headers.authorization;
   const decoded = jwt.verify(token, process.env.key);
