@@ -190,7 +190,7 @@ UserRoutes.get("/:username", checkApiKey, async (req, res) => {
 
 
 //get user by id
-UserRoutes.get("/:id", checkApiKey, async (req, res) => {
+UserRoutes.get("/id/:id", checkApiKey, async (req, res) => {
   const Id = req.params.id;
 
   try {
