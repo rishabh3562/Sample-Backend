@@ -3,7 +3,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../Model/User.model");
-const { authenticate } = require("../middleware/authentication.middleware");
+const { authenticate, checkApiKey } = require("../middleware/authentication.middleware");
 
 const saltRounds = +process.env.saltRounds;
 
@@ -94,7 +94,9 @@ UserRoutes.post("/login", async (req, res) => {
   }
 });
 
-UserRoutes.get("/", async (req, res) => {
+UserRoutes.get("/", checkApiKey, async (req, res) => {
+  // console.log(`iskey in user routes:`, iskey);
+
   try {
     const product = await UserModel.find();
     res.send({ data: product });
