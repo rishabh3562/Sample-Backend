@@ -209,6 +209,7 @@ UserRoutes.get("/id/:id", checkApiKey, async (req, res) => {
 UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
   const payload = req.body;
   const token = req.headers.authorization;
+
   const decoded = jwt.verify(token, process.env.key);
 
   // Check if email or username already exists
