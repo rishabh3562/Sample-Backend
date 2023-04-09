@@ -159,14 +159,27 @@ UserRoutes.get("/", checkApiKey, async (req, res) => {
   }
 });
 
-//get user by username
+//get user by username (example:-user/rishix786)
 UserRoutes.get("/:username", checkApiKey, async (req, res) => {
   const username = req.params.username;
-
+  const onlyId = req.query.onlyId;
   try {
-    const product = await UserModel.find({ username: username });
-    res.send({ data: product });
-  } catch (error) {
+
+    const user = await UserModel.findOne({ username: username });
+    if (!user) {
+      return res.status(404).send({ msg: "User not found", error: true });
+    }
+    else if (onlyId) {
+
+      const userId = user._id;
+      return res.status(200).json({ msg: userId, error: false });
+    }
+    else {
+
+      return res.status(200).json({ msg: user, error: false });
+    }
+  }
+  catch (error) {
     console.log("error", error);
     res.status(500).send({
       error: true,
@@ -174,6 +187,7 @@ UserRoutes.get("/:username", checkApiKey, async (req, res) => {
     });
   }
 });
+
 
 //get user by id
 UserRoutes.get("/:id", checkApiKey, async (req, res) => {
