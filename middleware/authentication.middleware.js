@@ -39,7 +39,6 @@ const checkApiKey = (req, res, next) => {
   }
 };
 
-
 module.exports = {
   authenticate, checkApiKey
 };

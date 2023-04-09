@@ -4,34 +4,67 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../Model/User.model");
 const { authenticate, checkApiKey } = require("../middleware/authentication.middleware");
-
 const saltRounds = +process.env.saltRounds;
-
 const UserRoutes = express.Router();
+// const validator = require('email-validator');
 
+
+
+
+
+const validator = require('validator');
+
+async function checkEmailAndUsername(payload) {
+  const { email, username } = payload;
+
+  // Validate email
+  if (!validator.isEmail(email)) {
+    return {
+      msg: "Invalid email format",
+      error: true,
+    };
+  }
+
+  const emailExists = await UserModel.findOne({ email });
+  const usernameExists = await UserModel.findOne({ username });
+
+  if (emailExists && usernameExists) {
+    return {
+      msg: "Email and username already registered",
+      error: true,
+    };
+  } else if (emailExists) {
+    return {
+      msg: "Email already registered",
+      error: true,
+    };
+  } else if (usernameExists) {
+    return {
+      msg: "Username already registered",
+      error: true,
+    };
+  } else {
+    return null;
+  }
+}
+
+
+
+
+//signup
 UserRoutes.post("/register", checkApiKey, async (req, res) => {
   const payload = req.body;
 
   try {
-    const emailExists = await UserModel.findOne({ email: payload.email });
-    const usernameExists = await UserModel.findOne({ username: payload.username });
-
-    if (emailExists && usernameExists) {
-      res.status(200).send({
-        msg: "Email and Username already registered",
-        error: true,
-      });
-    } else if (emailExists) {
-      res.status(200).send({
-        msg: "Email already registered",
-        error: true,
-      });
-    } else if (usernameExists) {
-      res.status(200).send({
-        msg: "Username already registered",
-        error: true,
-      });
-    } else {
+    const errorResponse = await checkEmailAndUsername(payload);
+    const phoneIsValid = validator.isMobilePhone(payload.phone);
+    if (errorResponse) {
+      return res.status(200).json(errorResponse);
+    }
+    else if (!phoneIsValid) {
+      return res.status(400).json({ msg: 'Invalid phone number', error: true });
+    }
+    else {
       bcrypt.hash(payload.password, saltRounds, async (err, hash) => {
         if (err) {
           throw err;
@@ -43,7 +76,7 @@ UserRoutes.post("/register", checkApiKey, async (req, res) => {
           console.log(result);
 
           res.status(200).send({
-            msg: "Registration Success",
+            msg: "Registration Successfull",
             username: user.name,
             email: user.email,
             error: false,
@@ -53,13 +86,14 @@ UserRoutes.post("/register", checkApiKey, async (req, res) => {
     }
   } catch (error) {
     res.status(400).send({
-      msg: "something went wrong while registering user",
-      error: error.message,
+      msg: "something went wrong",
+      error: true,
     });
     console.log(error);
   }
 });
 
+//login
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
@@ -86,7 +120,8 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
                 res.status(200).send({
                   msg: "logged in successfuly",
                   token,
-                  username: user.name,
+                  name: user.name,
+                  username: user.username,
                   error: false,
                 });
               }
@@ -108,6 +143,7 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
   }
 });
 
+//get all users
 UserRoutes.get("/", checkApiKey, async (req, res) => {
   // console.log(`iskey in user routes:`, iskey);
 
@@ -122,6 +158,24 @@ UserRoutes.get("/", checkApiKey, async (req, res) => {
     });
   }
 });
+
+//get user by username
+UserRoutes.get("/:username", checkApiKey, async (req, res) => {
+  const username = req.params.username;
+
+  try {
+    const product = await UserModel.find({ username: username });
+    res.send({ data: product });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send({
+      error: true,
+      msg: "something went wrong",
+    });
+  }
+});
+
+//get user by id
 UserRoutes.get("/:id", checkApiKey, async (req, res) => {
   const Id = req.params.id;
 
@@ -137,31 +191,53 @@ UserRoutes.get("/:id", checkApiKey, async (req, res) => {
   }
 });
 
+//update profile
 UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
   const payload = req.body;
   const token = req.headers.authorization;
   const decoded = jwt.verify(token, process.env.key);
-  // console.log("\n token in patch is :", req.headers.authorization)
-  // console.log("\n decoded in patch is :", decoded)
-  // console.log("\n payload in patch is :", payload)
-  try {
-    if (!req.body) {
-      res.send({ msg: "User must send something" });
-    }
-    else {
-      const userObj = payload;
-      delete userObj.userId;
-      const user = await UserModel.findByIdAndUpdate({ _id: decoded.vendorId }, userObj, { new: true });
-      console.log("\n UserModel in patch is :", user)
 
-      res.send({ msg: "updated Sucessfully" });
+  // Check if email or username already exists
+  const errorResponse = await checkEmailAndUsername(payload);
+  if (errorResponse) {
+    return res.status(200).json(errorResponse);
+  }
+
+  try {
+    const phoneIsValid = validator.isMobilePhone(payload.phone);
+    if (!req.body || !decoded.vendorId) {
+      return res.status(400).json({ msg: "Invalid user id ", error: true });
     }
+    else if (!phoneIsValid) {
+      return res.status(400).json({ msg: 'Invalid phone number', error: true });
+    }
+    const userObj = payload;
+    delete userObj.userId;
+
+    if (userObj.password) {
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(userObj.password, 10);
+      userObj.password = hashedPassword;
+    }
+
+    const user = await UserModel.findByIdAndUpdate(
+      { _id: decoded.vendorId },
+      userObj,
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).send({ msg: "User not found" });
+    }
+    console.log("user in update profile endpoint: ", user);
+    return res.status(200).send({ msg: "Updated successfully" });
   } catch (err) {
     console.log(err);
-    res.send({ err: "Something went wrong" });
+    return res.status(500).send({ err: "Something went wrong" });
   }
 });
 
+//delete user
 UserRoutes.delete("/delete", checkApiKey, async (req, res) => {
   const payload = req.body;
   const token = req.headers.authorization;

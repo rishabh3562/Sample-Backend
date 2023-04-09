@@ -8,7 +8,7 @@
     "server": "nodemon index.js"
   },
   "keywords": [],
-  "author": "Pooja Yadav",
+  "author": "Rishabh Dubey",
   "license": "ISC",
   "dependencies": {
     "argon2": "^0.30.3",
