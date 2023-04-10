@@ -8,7 +8,7 @@ const authenticate = (req, res, next) => {
   }
 
   const decoded = jwt.verify(token, process.env.key);
-  console.log("\ndecoded in authenticate.js:", decoded)
+  // console.log("\ndecoded in authenticate.js:", decoded)
 
   if (decoded) {
 
@@ -21,17 +21,17 @@ const authenticate = (req, res, next) => {
 
 const checkApiKey = (req, res, next) => {
   const key = req.query.key;
-  console.log("req.params.key: ", req.params.key)
-  console.log("req.query.key: ", req.query.key)
-  console.log("key in checkAPIKey: ", key)
+  // console.log("req.params.key: ", req.params.key)
+  // console.log("req.query.key: ", req.query.key)
+  // console.log("key in checkAPIKey: ", key)
   if (!key) {
     return res.status(401).json({ error: "Unauthorized: Missing API key" });
   }
   // key.trim();
   // console.log("key", key);
-  console.log("process.env.apikey", process.env.apiKey);
+  // console.log("process.env.apikey", process.env.apiKey);
   const isValidApiKey = (key.trim() === (process.env.apiKey.trim()));
-  console.log("isValidApiKey: ", isValidApiKey)
+  // console.log("isValidApiKey: ", isValidApiKey)
   if (isValidApiKey) {
     next();
   } else {

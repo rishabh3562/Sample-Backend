@@ -73,7 +73,7 @@ UserRoutes.post("/register", checkApiKey, async (req, res) => {
           const user = new UserModel(payload);
 
           const result = await user.save();
-          console.log(result);
+          // console.log(result);
 
           res.status(200).send({
             msg: "Registration Successfull",
@@ -89,17 +89,17 @@ UserRoutes.post("/register", checkApiKey, async (req, res) => {
       msg: "something went wrong",
       error: true,
     });
-    console.log(error);
+    // console.log(error);
   }
 });
 
 //login
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   try {
     const user = await UserModel.findOne({ email });
-    console.log("\n\n\nuser:", user)
+    // console.log("\n\n\nuser:", user)
     if (user) {
       bcrypt.compare(password, user.password, (err, result) => {
         if (err) {
@@ -139,7 +139,7 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
     res
       .status(400)
       .send({ msg: "something went wrong while login user", error });
-    console.log(error);
+    // console.log(error);
   }
 });
 
@@ -151,7 +151,7 @@ UserRoutes.get("/", checkApiKey, async (req, res) => {
     const product = await UserModel.find();
     res.send({ data: product });
   } catch (error) {
-    console.log("error", error);
+    // console.log("error", error);
     res.status(500).send({
       error: true,
       msg: "something went wrong",
@@ -180,7 +180,7 @@ UserRoutes.get("/:username", checkApiKey, async (req, res) => {
     }
   }
   catch (error) {
-    console.log("error", error);
+    // console.log("error", error);
     res.status(500).send({
       error: true,
       msg: "something went wrong",
@@ -197,7 +197,7 @@ UserRoutes.get("/id/:id", checkApiKey, async (req, res) => {
     const product = await UserModel.find({ _id: Id });
     res.send({ data: product });
   } catch (error) {
-    console.log("error", error);
+    // console.log("error", error);
     res.status(500).send({
       error: true,
       msg: "something went wrong",
@@ -244,10 +244,10 @@ UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
     if (!user) {
       return res.status(404).send({ msg: "User not found" });
     }
-    console.log("user in update profile endpoint: ", user);
+    // console.log("user in update profile endpoint: ", user);
     return res.status(200).send({ msg: "Updated successfully" });
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     return res.status(500).send({ err: "Something went wrong" });
   }
 });
@@ -261,10 +261,10 @@ UserRoutes.delete("/delete", checkApiKey, async (req, res) => {
 
   try {
     const delResult = await UserModel.findByIdAndDelete({ _id: decoded.vendorId }, payload);
-    console.log(delResult);
+    // console.log(delResult);
     res.send("Deletion Successful");
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     res.send({ msg: "Something went wrong" });
   }
 });
