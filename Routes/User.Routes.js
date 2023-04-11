@@ -54,7 +54,7 @@ async function checkEmailAndUsername(payload) {
 //signup
 UserRoutes.post("/register", async (req, res) => {
   const payload = req.body;
-
+  console.log("payload:", payload);
   try {
     const errorResponse = await checkEmailAndUsername(payload);
     const phoneIsValid = validator.isMobilePhone(payload.phone);
@@ -96,7 +96,7 @@ UserRoutes.post("/register", async (req, res) => {
 //login
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
-  // console.log(req.body);
+  console.log(req.body);
   try {
     const user = await UserModel.findOne({ email });
     // console.log("\n\n\nuser:", user)
@@ -146,7 +146,7 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
 //get all users
 UserRoutes.get("/", checkApiKey, async (req, res) => {
   // console.log(`iskey in user routes:`, iskey);
-
+  console.log("req.body:", req.body);
   try {
     const product = await UserModel.find();
     res.send({ data: product });
@@ -163,6 +163,7 @@ UserRoutes.get("/", checkApiKey, async (req, res) => {
 UserRoutes.get("/:username", checkApiKey, async (req, res) => {
   const username = req.params.username;
   const onlyId = req.query.onlyId;
+  console.log("req.body:", req.body);
   try {
 
     const user = await UserModel.findOne({ username: username });
@@ -192,7 +193,7 @@ UserRoutes.get("/:username", checkApiKey, async (req, res) => {
 //get user by id
 UserRoutes.get("/id/:id", checkApiKey, async (req, res) => {
   const Id = req.params.id;
-
+  console.log("req.body:", req.body);
   try {
     const product = await UserModel.find({ _id: Id });
     res.send({ data: product });
@@ -209,9 +210,11 @@ UserRoutes.get("/id/:id", checkApiKey, async (req, res) => {
 UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
   const payload = req.body;
   const token = req.headers.authorization;
-
+  console.log("req.body:", req.body);
+  console.log("token:", token);
+  console.log("payload:", payload);
   const decoded = jwt.verify(token, process.env.key);
-
+  console.log("decoded:", decoded);
   // Check if email or username already exists
   const errorResponse = await checkEmailAndUsername(payload);
   if (errorResponse) {
