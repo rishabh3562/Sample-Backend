@@ -85,8 +85,11 @@ UserRoutes.post("/register", async (req, res) => {
       });
     }
   } catch (error) {
+    const r = res.body;
     res.status(400).send({
+
       msg: "something went wrong",
+      response: r,
       error: true,
     });
     // console.log(error);
