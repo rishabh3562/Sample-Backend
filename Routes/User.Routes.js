@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../Model/User.model");
 const { authenticate, checkApiKey } = require("../middleware/authentication.middleware");
-const { removeCharsetUTF8, parseRequestBody } = require("../middleware/conversion.middleware");
+const { removeCharsetUTF8, parseRequestBody, UrlencodedToJson } = require("../middleware/conversion.middleware");
 const saltRounds = +process.env.saltRounds;
 const UserRoutes = express.Router();
 // const validator = require('email-validator');
@@ -98,7 +98,7 @@ UserRoutes.post("/register", parseRequestBody, removeCharsetUTF8, async (req, re
 });
 
 //login
-UserRoutes.post("/login", checkApiKey, parseRequestBody, removeCharsetUTF8, async (req, res) => {
+UserRoutes.post("/login", checkApiKey, UrlencodedToJson, removeCharsetUTF8, async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
   try {
