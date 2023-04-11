@@ -164,7 +164,7 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
               }
               jwt.sign(tokenData, process.env.key, handleJwtSignature);
             } else {
-              res.send({ msg: "Invalid credentials", error: true });
+              res.status(404).send({ msg: "Invalid credentials", error: true });
             }
           }
         });
