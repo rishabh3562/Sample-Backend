@@ -52,7 +52,7 @@ async function checkEmailAndUsername(payload) {
 
 
 //signup
-UserRoutes.post("/register", checkApiKey, async (req, res) => {
+UserRoutes.post("/register", async (req, res) => {
   const payload = req.body;
 
   try {
