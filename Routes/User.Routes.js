@@ -110,48 +110,51 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
   else if (errorResponse) {
     return res.status(404).send(errorResponse)
   }
-  try {
-    const user = await UserModel.findOne({ email });
-    // console.log("\n\n\nuser:", user)
-    if (user) {
-      bcrypt.compare(password, user.password, (err, result) => {
-        if (err) {
-          throw err;
-        } else {
-          if (result) {
-            const tokenData = {
-              vendorId: user._id,
-              name: user.name,
-              email: user.email,
-              // userType: user.userType,
-            }
-            const handleJwtSignature = (err, token) => {
-              if (err) {
-                throw err;
-              } else {
-                res.status(200).send({
-                  msg: "logged in successfuly",
-                  token,
-                  name: user.name,
-                  username: user.username,
-                  error: false,
-                });
-              }
-            }
-            jwt.sign(tokenData, process.env.key, handleJwtSignature);
+  else {
+
+    try {
+      const user = await UserModel.findOne({ email });
+      // console.log("\n\n\nuser:", user)
+      if (user) {
+        bcrypt.compare(password, user.password, (err, result) => {
+          if (err) {
+            throw err;
           } else {
-            res.send({ msg: "Invalid credentials", error: true });
+            if (result) {
+              const tokenData = {
+                vendorId: user._id,
+                name: user.name,
+                email: user.email,
+                // userType: user.userType,
+              }
+              const handleJwtSignature = (err, token) => {
+                if (err) {
+                  throw err;
+                } else {
+                  res.status(200).send({
+                    msg: "logged in successfuly",
+                    token,
+                    name: user.name,
+                    username: user.username,
+                    error: false,
+                  });
+                }
+              }
+              jwt.sign(tokenData, process.env.key, handleJwtSignature);
+            } else {
+              res.send({ msg: "Invalid credentials", error: true });
+            }
           }
-        }
-      });
-    } else {
-      res.status(404).send({ msg: "User Not found", error: true });
+        });
+      } else {
+        res.status(404).send({ msg: "User Not found", error: true });
+      }
+    } catch (error) {
+      res
+        .status(404)
+        .send({ msg: "something went wrong while login user", error });
+      // console.log(error);
     }
-  } catch (error) {
-    res
-      .status(404)
-      .send({ msg: "something went wrong while login user", error });
-    // console.log(error);
   }
 });
 
