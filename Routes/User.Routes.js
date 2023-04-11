@@ -101,12 +101,14 @@ UserRoutes.post("/register", async (req, res) => {
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
   const errorResponse = await checkEmailAndUsername(req.body);
-  console.log(req.body);
+  console.log("errorResponse", errorResponse);
+  console.log("req.body", req.body);
+  // console.log(req.body);
   if (!email || !password) {
     return res.status(404).send({ msg: "Please enter email and password correctly", error: true })
   }
   else if (errorResponse) {
-    return res.status(404).send({ msg: errorResponse, error: true })
+    return res.status(404).send(errorResponse)
   }
   try {
     const user = await UserModel.findOne({ email });
@@ -120,7 +122,6 @@ UserRoutes.post("/login", checkApiKey, async (req, res) => {
             const tokenData = {
               vendorId: user._id,
               name: user.name,
-
               email: user.email,
               // userType: user.userType,
             }
