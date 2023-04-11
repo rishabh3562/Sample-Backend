@@ -53,7 +53,7 @@ async function checkEmailAndUsername(payload) {
 
 
 //signup
-UserRoutes.post("/register", removeCharsetUTF8, parseRequestBody, async (req, res) => {
+UserRoutes.post("/register", parseRequestBody, removeCharsetUTF8, async (req, res) => {
   const payload = req.body;
   console.log("payload:", payload);
   try {
@@ -98,7 +98,7 @@ UserRoutes.post("/register", removeCharsetUTF8, parseRequestBody, async (req, re
 });
 
 //login
-UserRoutes.post("/login", checkApiKey, async (req, res) => {
+UserRoutes.post("/login", checkApiKey, parseRequestBody, removeCharsetUTF8, async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
   try {
