@@ -101,6 +101,9 @@ UserRoutes.post("/register", async (req, res) => {
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
+  if (!email || !password) {
+    return res.status(404).send({ msg: "Please enter email and password correctly", error: true })
+  }
   try {
     const user = await UserModel.findOne({ email });
     // console.log("\n\n\nuser:", user)
