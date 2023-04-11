@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const bodyParser = require('body-parser');
+
+// const app = express();
 
 const { connect } = require("./configs/db");
 const { UserRoutes } = require("./Routes/User.Routes");
@@ -17,7 +20,8 @@ app.use(
   })
 );
 
-app.use(express.json());
+// app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send("Welcome");
