@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../Model/User.model");
 const { authenticate, checkApiKey } = require("../middleware/authentication.middleware");
+const { removeCharsetUTF8, parseRequestBody } = require("../middleware/conversion.middleware");
 const saltRounds = +process.env.saltRounds;
 const UserRoutes = express.Router();
 // const validator = require('email-validator');
@@ -52,18 +53,18 @@ async function checkEmailAndUsername(payload) {
 
 
 //signup
-UserRoutes.post("/register", async (req, res) => {
+UserRoutes.post("/register", removeCharsetUTF8, async (req, res) => {
   const payload = req.body;
   console.log("payload:", payload);
   try {
     const errorResponse = await checkEmailAndUsername(payload);
-    const phoneIsValid = validator.isMobilePhone(payload.phone);
+    // const phoneIsValid = validator.isMobilePhone(payload.phone);
     if (errorResponse) {
       return res.status(200).json(errorResponse);
     }
-    else if (!phoneIsValid) {
-      return res.status(400).json({ msg: 'Invalid phone number', error: true });
-    }
+    // else if (!phoneIsValid) {
+    //   return res.status(400).json({ msg: 'Invalid phone number', error: true });
+    // }
     else {
       bcrypt.hash(payload.password, saltRounds, async (err, hash) => {
         if (err) {
@@ -225,13 +226,13 @@ UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
   }
 
   try {
-    const phoneIsValid = validator.isMobilePhone(payload.phone);
+    // const phoneIsValid = validator.isMobilePhone(payload.phone);
     if (!req.body || !decoded.vendorId) {
       return res.status(400).json({ msg: "Invalid user id ", error: true });
     }
-    else if (!phoneIsValid) {
-      return res.status(400).json({ msg: 'Invalid phone number', error: true });
-    }
+    // else if (!phoneIsValid) {
+    //   return res.status(400).json({ msg: 'Invalid phone number', error: true });
+    // }
     const userObj = payload;
     delete userObj.userId;
 
