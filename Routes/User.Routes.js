@@ -51,7 +51,8 @@ async function checkEmailAndUsername(payload) {
 
 async function loginValditor(payload) {
   const { email, username } = payload;
-
+  const emailExists = await UserModel.findOne({ email });
+  const usernameExists = await UserModel.findOne({ username });
   // Validate email
   if (!validator.isEmail(email)) {
     return {
@@ -60,8 +61,12 @@ async function loginValditor(payload) {
     };
   }
 
-
-
+  else if (!emailExists) {
+    return {
+      msg: "User Not Found",
+      error: true,
+    }
+  }
   else {
     return null;
   }
