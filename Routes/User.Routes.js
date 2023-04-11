@@ -49,6 +49,23 @@ async function checkEmailAndUsername(payload) {
   }
 }
 
+async function loginValditor(payload) {
+  const { email, username } = payload;
+
+  // Validate email
+  if (!validator.isEmail(email)) {
+    return {
+      msg: "Invalid email format",
+      error: true,
+    };
+  }
+
+
+
+  else {
+    return null;
+  }
+}
 
 
 
@@ -100,7 +117,7 @@ UserRoutes.post("/register", async (req, res) => {
 //login
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
   const { email, password } = req.body;
-  const errorResponse = await checkEmailAndUsername(req.body);
+  const errorResponse = await loginValditor(req.body);
   console.log("errorResponse", errorResponse);
   console.log("req.body", req.body);
   // console.log(req.body);
