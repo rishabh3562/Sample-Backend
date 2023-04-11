@@ -26,9 +26,10 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send("Welcome");
 });
-app.get('*', (req, res) => {
-  res.status(404).send('Page not found');
-});
+// app.get('*', (req, res) => {
+// console,log(res.body);
+//   res.status(404).send('Page not found');
+// });
 app.use("/user", UserRoutes)
 
 app.listen(process.env.port, async () => {
