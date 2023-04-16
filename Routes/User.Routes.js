@@ -250,13 +250,13 @@ UserRoutes.patch("/profile", checkApiKey, authenticate, async (req, res) => {
   // Check if email or username already exists
   const errorResponse = await checkEmailAndUsername(payload);
   if (errorResponse) {
-    return res.status(200).json(errorResponse);
+    return res.status(404).json(errorResponse);
   }
 
   try {
     // const phoneIsValid = validator.isMobilePhone(payload.phone);
     if (!req.body || !decoded.vendorId) {
-      return res.status(400).json({ msg: "Invalid user id ", error: true });
+      return res.status(404).json({ msg: "Invalid user id ", error: true });
     }
     // else if (!phoneIsValid) {
     //   return res.status(400).json({ msg: 'Invalid phone number', error: true });
