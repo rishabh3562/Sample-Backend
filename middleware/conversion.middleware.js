@@ -46,6 +46,7 @@ function UrlencodedToJson(req, res, next) {
     req.on('data', (chunk) => {
       body += chunk;
     });
+    console.log("body: ", body)
     req.on('end', () => {
       req.body = JSON.parse(JSON.stringify(require('querystring').parse(body)));
       req.headers['content-type'] = 'application/json';

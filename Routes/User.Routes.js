@@ -49,40 +49,43 @@ async function checkEmailAndUsername(payload) {
   }
 }
 
-async function loginValditor(payload) {
+async function loginValidator(payload) {
   const { email, username } = payload;
-  const emailExists = await UserModel.findOne({ email });
-  const usernameExists = await UserModel.findOne({ username });
-  // Validate email
-  if (!validator.isEmail(email)) {
+  const user = await UserModel.findOne({ $or: [{ email }, { username }] });
+
+  if (!email && !username) {
+    return {
+      msg: "Please provide an email or a username",
+      error: true,
+    };
+  } else if (email && !validator.isEmail(email)) {
     return {
       msg: "Invalid email format",
       error: true,
     };
-  }
-
-  else if (!emailExists) {
+  } else if (!user) {
     return {
-      msg: "User Not Found",
+      msg: "User not found",
       error: true,
-    }
-  }
-  else {
+    };
+  } else {
     return null;
   }
 }
 
 
 
+
+
 //signup
-UserRoutes.post("/register", async (req, res) => {
+UserRoutes.post("/register", checkApiKey, async (req, res) => {
   const payload = req.body;
   console.log("payload:", payload);
   try {
     const errorResponse = await checkEmailAndUsername(payload);
     // const phoneIsValid = validator.isMobilePhone(payload.phone);
     if (errorResponse) {
-      return res.status(200).json(errorResponse);
+      return res.status(404).json(errorResponse);
     }
     // else if (!phoneIsValid) {
     //   return res.status(400).json({ msg: 'Invalid phone number', error: true });
@@ -100,7 +103,9 @@ UserRoutes.post("/register", async (req, res) => {
 
           res.status(200).send({
             msg: "Registration Successfull",
-            username: user.name,
+            username: user.username,
+            fname: user.fname,
+            lname: user.lname,
             email: user.email,
             error: false,
           });
@@ -121,64 +126,54 @@ UserRoutes.post("/register", async (req, res) => {
 
 //login
 UserRoutes.post("/login", checkApiKey, async (req, res) => {
-  const { email, password } = req.body;
-  const errorResponse = await loginValditor(req.body);
-  console.log("errorResponse", errorResponse);
-  console.log("req.body", req.body);
-  // console.log(req.body);
-  if (!email || !password) {
-    return res.status(404).send({ msg: "Please enter email and password correctly", error: true })
-  }
-  else if (errorResponse) {
-    return res.status(404).send(errorResponse)
-  }
-  else {
+  const { email, username, password } = req.body;
 
-    try {
-      const user = await UserModel.findOne({ email });
-      // console.log("\n\n\nuser:", user)
-      if (user) {
-        bcrypt.compare(password, user.password, (err, result) => {
-          if (err) {
-            throw err;
-          } else {
-            if (result) {
-              const tokenData = {
-                vendorId: user._id,
-                name: user.name,
-                email: user.email,
-                // userType: user.userType,
-              }
-              const handleJwtSignature = (err, token) => {
-                if (err) {
-                  throw err;
-                } else {
-                  res.status(200).send({
-                    msg: "logged in successfuly",
-                    token,
-                    name: user.name,
-                    username: user.username,
-                    error: false,
-                  });
-                }
-              }
-              jwt.sign(tokenData, process.env.key, handleJwtSignature);
-            } else {
-              res.status(404).send({ msg: "Invalid credentials", error: true });
-            }
-          }
-        });
-      } else {
-        res.status(404).send({ msg: "User Not found", error: true });
-      }
-    } catch (error) {
-      res
-        .status(404)
-        .send({ msg: "something went wrong while login user", error });
-      // console.log(error);
+  // Validate input
+  const errorResponse = await loginValidator({ email, username });
+  if (errorResponse) {
+    return res.status(400).json(errorResponse);
+  }
+
+  try {
+    // Find user by email or username
+    const user = await UserModel.findOne({ $or: [{ email }, { username }] });
+    if (!user) {
+      return res.status(404).json({ msg: "User not found", error: true });
     }
+
+    // Check password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({ msg: "Invalid credentials", error: true });
+    }
+
+    // Create token
+    const tokenData = {
+      vendorId: user._id,
+      fname: user.fname,
+      lname: user.lname,
+      username: user.username,
+      email: user.email,
+    };
+    const token = jwt.sign(tokenData, process.env.key);
+
+    // Return success response with token
+    return res.json({
+      msg: "Logged in successfully",
+      token,
+      fname: user.fname,
+      lname: user.lname,
+      email: user.email,
+      username: user.username,
+      error: false,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Something went wrong", error: true });
   }
 });
+
+
 
 //get all users
 UserRoutes.get("/", checkApiKey, async (req, res) => {
