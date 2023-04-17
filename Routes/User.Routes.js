@@ -200,16 +200,16 @@ UserRoutes.get("/:username", checkApiKey, async (req, res) => {
 
     const user = await UserModel.findOne({ username: username });
     if (!user) {
-      return res.status(404).send({ msg: "User not found", error: true });
+      return res.status(404).json({ msg: "User not found", error: true });
     }
     else if (onlyId) {
 
       const userId = user._id;
-      return res.status(200).json({ msg: userId, error: false });
+      return res.status(200).send({ msg: userId, error: false });
     }
     else {
 
-      return res.status(200).json({ msg: user, error: false });
+      return res.status(200).send({ msg: user, error: false });
     }
   }
   catch (error) {
